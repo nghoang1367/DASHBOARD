@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DASHBOARD GROUP 11 | Rossmann Big Store Demand Forecasting</title>
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
+      background-color: #F8FAFC;
+      color: #0F172A;
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #F1F5F9; }
+    ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 9999px; }
+
+    /* === SIDEBAR TRẮNG THANH LỊCH CHUẨN NEXUS === */
+    .sidebar {
+      width: 285px;
+      min-width: 285px;
+      background: #FFFFFF;
+      border-right: 1px solid #E2E8F0;
+      padding: 24px 18px;
+      display: flex;
+      flex-direction: column;
+      transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1), padding 0.28s ease;
+      flex-shrink: 0;
+    }
+    .sidebar.collapsed {
+      width: 0 !important;
+      min-width: 0 !important;
+      max-width: 0 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      border: none !important;
+      overflow: hidden !important;
+    }
+    .brand-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+    .brand-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .brand-badge {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #4361EE 0%, #3B82F6 100%);
+      color: #FFFFFF;
+      font-weight: 800;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(67, 97, 238, 0.30);
+      flex-shrink: 0;
+    }
+    .brand-text h2 {
+      font-size: 16px;
+      font-weight: 800;
+      color: #0F172A;
+      letter-spacing: -0.3px;
+      white-space: nowrap;
+      line-height: 1.2;
+    }
+    .brand-text span {
+      font-size: 11.5px;
+      color: #64748B;
+      font-weight: 600;
+      display: block;
+      line-height: 1.35;
+      margin-top: 2px;
+    }
+    .sidebar-close-btn {
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      color: #64748B;
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .sidebar-close-btn:hover { background: #EEF2FF; color: #4361EE; border-color: #C7D2FE; }
+
+    .nav-active-pill {
+      background-color: #EEF2FF;
+      color: #4361EE;
+      font-weight: 700;
+      padding: 11px 14px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      font-size: 15px;
+      border: 1px solid rgba(67, 97, 238, 0.16);
+      white-space: nowrap;
+    }
+    .sidebar-section-label {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #94A3B8;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 10px;
+    }
+    .sidebar-stage-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+    .sidebar-stage-item {
+      padding: 9px 12px;
+      border-radius: 9px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #475569;
+      background: transparent;
+      border: 1px solid transparent;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sidebar-stage-item:hover {
+      background: #F8FAFC;
+      color: #4361EE;
+    }
+    .sidebar-stage-item.active {
+      background: #EEF2FF;
+      color: #4361EE;
+      border-color: #C7D2FE;
+      font-weight: 700;
+    }
+
+    /* Thẻ đồ án phong cách Nexus Promo Box */
+    .nexus-promo-box {
+      margin-top: auto;
+      background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%);
+      border: 1px solid #C7D2FE;
+      border-radius: 14px;
+      padding: 16px;
+      color: #1E1B4B;
+    }
+    .promo-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: #3730A3;
+      margin-bottom: 6px;
+    }
+    .promo-desc {
+      font-size: 12.5px;
+      color: #4338CA;
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+    .promo-btn {
+      background: #4361EE;
+      color: #FFFFFF;
+      font-size: 12.5px;
+      font-weight: 700;
+      padding: 7px 12px;
+      border-radius: 8px;
+      text-align: center;
+      display: block;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    .promo-btn:hover { background: #3730A3; }
+
+    /* === MAIN WRAPPER & TOP RIBBON === */
+    .main-wrapper {
+      flex: 1;
+      min-width: 0;
+      padding: 24px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .top-ribbon {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .ribbon-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+    .toggle-sidebar-btn {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      color: #475569;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .toggle-sidebar-btn.closed {
+      background: #4361EE;
+      color: #FFFFFF;
+      border-color: #4361EE;
+    }
+    .toggle-sidebar-btn:hover {
+      border-color: #4361EE;
+      color: #4361EE;
+    }
+    .toggle-sidebar-btn.closed:hover {
+      background: #3730A3;
+      color: #FFFFFF;
+    }
+    .breadcrumb {
+      font-size: 13.5px;
+      color: #94A3B8;
+      font-weight: 500;
+      margin-bottom: 3px;
+    }
+    .breadcrumb span {
+      color: #4361EE;
+      font-weight: 700;
+    }
+    .page-title {
+      font-size: 24.5px;
+      font-weight: 800;
+      color: #0F172A;
+      letter-spacing: -0.5px;
+      line-height: 1.2;
+    }
+    .ribbon-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .date-pill {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      padding: 8px 13px;
+      border-radius: 10px;
+      font-size: 12.5px;
+      color: #64748B;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .status-pill {
+      padding: 8px 13px;
+      border-radius: 10px;
+      font-size: 12.5px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    /* THANH RIBBON DROPDOWN XỔ XUỐNG 4 GIAI ĐOẠN (MỀM MẠI CHUẨN NEXUS) */
+    .stage-select-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+    #stageSelect {
+      appearance: none;
+      -webkit-appearance: none;
+      background: #FFFFFF;
+      border: 1px solid rgba(203, 213, 225, 0.85);
+      color: #0F172A;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 700;
+      padding: 9px 38px 9px 15px;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+      transition: all 0.2s;
+      min-width: 295px;
+    }
+    #stageSelect:hover, #stageSelect:focus {
+      border-color: #93C5FD;
+      outline: none;
+      box-shadow: 0 4px 14px rgba(67, 97, 238, 0.10);
+    }
+    .stage-select-arrow {
+      position: absolute;
+      right: 14px;
+      pointer-events: none;
+      color: #64748B;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    /* === BANNER LỌC CHÉO POWER BI === */
+    .cross-filter-banner {
+      background: #FFFFFF;
+      border: 1px dashed #CBD5E1;
+      border-radius: 12px;
+      padding: 9px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 13px;
+      color: #475569;
+    }
+    .clear-filter-btn {
+      background: #FFE4E6;
+      color: #BE123C;
+      border: 1px solid #FECDD3;
+      padding: 4px 11px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: none;
+    }
+    .clear-filter-btn.show { display: inline-block; }
+
+    /* === 4 THẺ KPI CHUẨN NEXUS (KHUNG MỀM MẠI) === */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .nexus-kpi-card {
+      background: #FFFFFF;
+      border: 1px solid rgba(226, 232, 240, 0.65);
+      border-radius: 18px;
+      padding: 20px 22px;
+      box-shadow: 0 6px 24px -4px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+      transition: all 0.25s ease;
+      min-width: 0;
+    }
+    .nexus-kpi-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px -4px rgba(67, 97, 238, 0.07);
+      border-color: rgba(203, 213, 225, 0.85);
+    }
+    .kpi-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      gap: 8px;
+    }
+    .kpi-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #64748B;
+    }
+    .kpi-icon-box {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .kpi-val-row {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+    .kpi-val {
+      font-size: 28px;
+      font-weight: 800;
+      color: #0F172A;
+      letter-spacing: -0.5px;
+      line-height: 1.1;
+    }
+    .kpi-badge-green {
+      background-color: #DCFCE7;
+      color: #15803D;
+      padding: 3px 9px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .kpi-badge-pink {
+      background-color: #FFE4E6;
+      color: #BE123C;
+      padding: 3px 9px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .kpi-badge-blue {
+      background-color: #EEF2FF;
+      color: #4361EE;
+      padding: 3px 9px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .kpi-sub {
+      font-size: 13px;
+      color: #94A3B8;
+      font-weight: 500;
+    }
+
+    /* === HÀNG 2: BIỂU ĐỒ TRUNG TÂM (1.65fr vs 1fr) === */
+    .chart-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);
+      gap: 16px;
+    }
+    .nexus-card {
+      background: #FFFFFF;
+      border: 1px solid rgba(226, 232, 240, 0.65);
+      border-radius: 18px;
+      padding: 22px 24px;
+      box-shadow: 0 6px 24px -4px rgba(15, 23, 42, 0.04);
+      min-width: 0;
+      overflow: hidden;
+    }
+    .card-header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+    .card-title {
+      font-size: 16.5px;
+      font-weight: 700;
+      color: #0F172A;
+      letter-spacing: -0.25px;
+      white-space: nowrap;
+    }
+    .card-stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .card-stat-line {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      white-space: nowrap;
+    }
+    .card-big-num {
+      font-size: 24px;
+      font-weight: 800;
+      color: #0F172A;
+    }
+    .card-stat-sub {
+      font-size: 12.5px;
+      color: #94A3B8;
+      font-weight: 500;
+    }
+    .pill-btn-group {
+      display: inline-flex;
+      gap: 5px;
+      background: #F8FAFC;
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid #E2E8F0;
+      flex-shrink: 0;
+      flex-wrap: nowrap;
+    }
+    .pill-btn {
+      padding: 5px 11px;
+      border-radius: 7px;
+      border: none;
+      background: transparent;
+      color: #64748B;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .pill-btn.stage1-btn {
+      padding: 4px 7px;
+      font-size: 11.5px;
+    }
+    .pill-btn.active {
+      background: #4361EE;
+      color: #FFFFFF;
+      box-shadow: 0 2px 6px rgba(67, 97, 238, 0.25);
+    }
+    .pill-btn:hover:not(.active) {
+      background: #EEF2FF;
+      color: #4361EE;
+    }
+
+    /* 3 Ô MINI STATS MỀM MẠI TRÊN THẺ PHẢI */
+    .mini-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .mini-stat {
+      background: #F8FAFC;
+      border: 1px solid rgba(241, 245, 249, 0.9);
+      border-radius: 14px;
+      padding: 12px 8px;
+      text-align: center;
+    }
+    .mini-stat-label {
+      font-size: 11.5px;
+      color: #64748B;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .mini-stat-val {
+      font-size: 18.5px;
+      font-weight: 800;
+      color: #0F172A;
+      line-height: 1.2;
+    }
+    .mini-stat-sub {
+      font-size: 11px;
+      font-weight: 700;
+      margin-top: 3px;
+    }
+
+    /* === HÀNG 3: BỐ CỤC 2 TẦNG CỐ ĐỊNH (Tầng 1 Full Table, Tầng 2 50%-50%) === */
+    .bottom-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .bottom-full {
+      grid-column: 1 / -1;
+    }
+    .table-responsive {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .nexus-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+    .nexus-table th {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #64748B;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      padding: 11px 12px;
+      border-bottom: 1px solid #E2E8F0;
+      background: #F8FAFC;
+      text-align: left;
+      white-space: nowrap;
+    }
+    .nexus-table td {
+      font-size: 14px;
+      color: #334155;
+      padding: 12px 12px;
+      border-bottom: 1px solid #F1F5F9;
+      vertical-align: middle;
+      line-height: 1.4;
+    }
+    .nexus-table tr:hover td { background-color: #F8FAFC; }
+
+    /* FEED CẢNH BÁO HOẠT ĐỘNG */
+    .section-tag {
+      background: #EEF2FF;
+      color: #4361EE;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 9999px;
+    }
+    .feed-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 11px 4px;
+      border-bottom: 1px solid #F1F5F9;
+    }
+    .feed-item:last-child { border-bottom: none; }
+    .feed-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      flex-shrink: 0;
+    }
+    .feed-body { flex: 1; min-width: 0; }
+    .feed-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 3px;
+      flex-wrap: wrap;
+    }
+    .feed-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0F172A;
+    }
+    .feed-desc {
+      font-size: 13px;
+      color: #64748B;
+      line-height: 1.4;
+    }
+
+    @media (max-width: 1200px) {
+      .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .chart-row { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 850px) {
+      .kpi-grid { grid-template-columns: 1fr; }
+      .bottom-row { grid-template-columns: 1fr; }
+      #stageSelect { min-width: 240px; width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-row">
+      <div class="brand-left">
+        <div class="brand-badge">11</div>
+        <div class="brand-text">
+          <h2>DASHBOARD GROUP 11</h2>
+          <span>Rossmann Big Store Demand Forecasting</span>
+        </div>
+      </div>
+      <button class="sidebar-close-btn" onclick="toggleSidebar()" title="Thu gọn thanh bên">✕</button>
+    </div>
+
+    <div class="nav-active-pill">
+      <span>📊</span> <span>Tổng quan hệ thống</span>
+    </div>
+
+    <div class="sidebar-section-label">Điều hướng 4 giai đoạn</div>
+    <div class="sidebar-stage-list" id="sidebarStageList">
+      <button class="sidebar-stage-item active" data-stage="1" onclick="changeStage(1)">1. Trước làm sạch (Thô)</button>
+      <button class="sidebar-stage-item" data-stage="2" onclick="changeStage(2)">2. Đang xử lý (Pipeline)</button>
+      <button class="sidebar-stage-item" data-stage="3" onclick="changeStage(3)">3. Sau làm sạch (Sạch)</button>
+      <button class="sidebar-stage-item" data-stage="4" onclick="changeStage(4)">4. Đối chiếu Trước vs Sau</button>
+    </div>
+
+    <div class="nexus-promo-box">
+      <div class="promo-title">🎓 ĐỒ ÁN TIỂU LUẬN PRJ-14</div>
+      <div class="promo-desc">
+        <b>Đề tài:</b> Dự Báo Nhu Cầu Tồn Kho Bán Lẻ<br/>
+        <b>Nhóm thực hiện:</b> Nhóm 11<br/>
+        • Lê Thị Hiếu Ngân (2521000826)<br/>
+        • Hà Hồng Quang (2521001089)<br/>
+        <b>GVHD:</b> ThS. Trần Mạnh Tường<br/>
+        <b>Lớp HP:</b> 2631101190501
+      </div>
+      <a href="#auditTableSection" class="promo-btn">🔍 Xem Bảng Kiểm Toán</a>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-wrapper">
+    <!-- TOP HEADER + THANH RIBBON XỔ XUỐNG 4 GIAI ĐOẠN -->
+    <header class="top-ribbon">
+      <div class="ribbon-left">
+        <button class="toggle-sidebar-btn" id="toggleBtn" onclick="toggleSidebar()" title="Đóng/Mở thanh bên">◀</button>
+        <div>
+          <div class="breadcrumb">Trang chủ &nbsp;>&nbsp; Bảng điều khiển &nbsp;>&nbsp; <span id="crumbSub">1. Trước làm sạch</span></div>
+          <h1 class="page-title" id="pageTitle">1. Kiểm Toán Hiện Trạng Dữ Liệu Thô Trước Khi Làm Sạch</h1>
+        </div>
+      </div>
+
+      <div class="ribbon-right">
+        <span class="status-pill" id="statusPill" style="display:none;"></span>
+        <div class="stage-select-wrap">
+          <select id="stageSelect" onchange="changeStage(Number(this.value))" aria-label="Chọn giai đoạn kiểm toán">
+            <option value="1" selected>1. Trước làm sạch (Dữ liệu thô ban đầu)</option>
+            <option value="2">2. Đang xử lý (Khôi phục & Chuẩn hóa)</option>
+            <option value="3">3. Sau làm sạch (Tập dữ liệu sạch hoàn chỉnh)</option>
+            <option value="4">4. Đối chiếu Trực tiếp: Trước vs Sau</option>
+          </select>
+          <span class="stage-select-arrow">⌄</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- BANNER LỌC CHÉO POWER BI (HIỆN Ở GĐ 1) -->
+    <div class="cross-filter-banner" id="crossFilterBanner">
+      <span id="crossFilterMsg">💡 <b>Lọc Chéo Power BI (Cross-Filtering):</b> Nhấp trực tiếp vào một cột thứ bất kỳ trên biểu đồ hoặc bấm nút ngày bên dưới để lọc riêng 4 thẻ KPI.</span>
+      <button class="clear-filter-btn" id="clearFilterBtn" onclick="setDayFilter('Tất cả')">✕ Bỏ lọc (Xem tất cả)</button>
+    </div>
+
+    <!-- HÀNG 1: 4 THẺ KPI -->
+    <section class="kpi-grid" id="kpiGrid"></section>
+
+    <!-- HÀNG 2: 2 BIỂU ĐỒ TRỌNG TÂM -->
+    <section class="chart-row">
+      <div class="nexus-card">
+        <div class="card-header-top">
+          <div class="card-title" id="barTitle"></div>
+          <div id="barControls"></div>
+        </div>
+        <div class="card-stat-row">
+          <div class="card-stat-line">
+            <span class="card-big-num" id="barBigNum"></span>
+            <span id="barBadge"></span>
+            <span class="card-stat-sub" id="barSub"></span>
+          </div>
+        </div>
+        <div id="barChart" style="height: 290px;"></div>
+      </div>
+
+      <div class="nexus-card">
+        <div class="card-header-top">
+          <div class="card-title" id="areaTitle"></div>
+        </div>
+        <div class="mini-stats-grid" id="miniStats"></div>
+        <div id="areaChart" style="height: 235px;"></div>
+      </div>
+    </section>
+
+    <!-- HÀNG 3: BỐ CỤC 2 TẦNG CỐ ĐỊNH -->
+    <section class="bottom-row">
+      <!-- TẦNG 1: BẢNG KIỂM TOÁN 4 CỘT TOÀN MÀN HÌNH -->
+      <div class="nexus-card bottom-full" id="auditTableSection">
+        <div class="card-header-top" style="margin-bottom: 12px;">
+          <div class="card-title" id="tableTitle"></div>
+          <span class="section-tag" id="tableTag">Kiểm toán thực tế</span>
+        </div>
+        <div class="table-responsive">
+          <table class="nexus-table" id="auditTable"></table>
+        </div>
+      </div>
+
+      <!-- TẦNG 2 TRÁI: CẢNH BÁO HOẠT ĐỘNG -->
+      <div class="nexus-card">
+        <div class="card-header-top" style="margin-bottom: 10px;">
+          <div class="card-title" id="feedTitle">Cảnh Báo Hoạt Động</div>
+          <span class="section-tag">Bản tin</span>
+        </div>
+        <div id="insightsFeed"></div>
+      </div>
+
+      <!-- TẦNG 2 PHẢI: BIỂU ĐỒ THANH NGANG GRADIENT ĐƠN SẮC -->
+      <div class="nexus-card">
+        <div class="card-header-top" style="margin-bottom: 10px;">
+          <div class="card-title" id="hbarTitle"></div>
+          <span class="section-tag">Tổng quan</span>
+        </div>
+        <div id="hbarChart" style="height: 280px;"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const M = {"raw": {"sales_rows": 1017209, "sales_cols": 9, "store_rows": 1115, "store_cols": 10, "ram_sales_mb": 436.6, "ram_store_mb": 0.5, "na_sales": 858047, "na_store": 2917, "na_total": 860964, "dup_sales": 17957, "non_numeric_cells": 386323, "open0_sales_gt0": 5477, "sales_neg": 41499, "sales_mean_all": 36807.35, "sales_median_all": 5770.0, "clean_rows_initial": 236215, "err_by_day": {"Thứ 2": 209, "Thứ 3": 52, "Thứ 4": 109, "Thứ 5": 307, "Thứ 6": 180, "Thứ 7": 18, "Chủ Nhật": 4097}, "na_by_day": {"Thứ 2": 102804, "Thứ 3": 103322, "Thứ 4": 103606, "Thứ 5": 103571, "Thứ 6": 104030, "Thứ 7": 102605, "Chủ Nhật": 103080}, "non_num_by_day": {"Thứ 2": 44249, "Thứ 3": 44306, "Thứ 4": 44525, "Thứ 5": 44342, "Thứ 6": 44456, "Thứ 7": 43689, "Chủ Nhật": 44222}, "valid_by_day": {"Thứ 2": 32672, "Thứ 3": 33305, "Thứ 4": 33129, "Thứ 5": 33325, "Thứ 6": 32683, "Thứ 7": 33199, "Chủ Nhật": 31453}, "mean_by_day_raw_valid": {"Thứ 2": 7954.32, "Thứ 3": 7216.85, "Thứ 4": 6795.68, "Thứ 5": 6483.84, "Thứ 6": 6922.04, "Thứ 7": 6148.47, "Chủ Nhật": 779.11}, "mean_raw_valid_overall": 6042.9}, "clean": {"total_rows": 1014933, "total_cols": 18, "open_days": 846272, "closed_days": 168661, "exact_dup_removed": 352, "key_dup_removed": 1924, "ram_before_mb": 239.68, "ram_after_mb": 33.88, "ram_saved_pct": 85.87, "csv_size_mb": 70.57, "bin_format": "Pickle (gzip)", "bin_size_mb": 3.61, "desc_quant": {"Sales": {"n": 846272, "mean": 6885.13, "median": 6328.0, "std": 2992.76, "q1": 4869.5, "q3": 8249.25, "min": 502.0, "max": 38025.0, "skew": 1.5569, "kurt": 4.6359}, "Customers": {"n": 846272, "mean": 756.47, "median": 672.0, "std": 392.34, "q1": 519.0, "q3": 884.0, "min": 10.0, "max": 5192.0, "skew": 2.7992, "kurt": 13.329}, "CompetitionDistance": {"n": 846272, "mean": 5093.47, "median": 2370.0, "std": 7532.07, "q1": 970.0, "q3": 5650.0, "min": 20.0, "max": 75860.0, "skew": 3.3965, "kurt": 17.1389}}, "corr_sales_customers": 0.7956, "corr_sales_promo": 0.3786, "corr_sales_dow": -0.1815, "corr_sales_comp": -0.0568, "promo1_mean": 8148.09, "promo0_mean": 5868.85, "promo_diff": 2279.24, "promo_lift_pct": 38.84, "storetype_stats": {"a": {"count": 577877.0, "mean": 6858.92, "median": 6248.0}, "b": {"count": 8161.0, "mean": 10323.96, "median": 9366.0}, "c": {"count": 74812.0, "mean": 6857.13, "median": 6385.0}, "d": {"count": 185422.0, "mean": 6826.76, "median": 6461.25}}, "assortment_stats": {"a": {"count": 583715.0, "mean": 6692.25, "median": 6174.0}, "b": {"count": 7260.0, "mean": 8280.34, "median": 7204.0}, "c": {"count": 255297.0, "mean": 7286.46, "median": 6647.0}}, "mean_by_day": {"Thứ 2": 8102.92, "Thứ 3": 7027.07, "Thứ 4": 6671.07, "Thứ 5": 6698.05, "Thứ 6": 6998.08, "Thứ 7": 5822.68, "Chủ Nhật": 8047.4}, "cust_by_day": {"Thứ 2": 845.99, "Thứ 3": 765.02, "Thứ 4": 736.05, "Thứ 5": 749.02, "Thứ 6": 775.19, "Thứ 7": 654.48, "Chủ Nhật": 1407.54}, "top5_stores": [{"store": 817, "type": "a", "avg_sales": 21572.83}, {"store": 1114, "type": "a", "avg_sales": 20278.97}, {"store": 262, "type": "b", "avg_sales": 20260.49}, {"store": 251, "type": "a", "avg_sales": 18873.45}, {"store": 513, "type": "a", "avg_sales": 18086.16}]}, "tests": {"t_stat": 368.65, "p_val_t": 0.0, "f_stat": 3679.52, "p_val_f": 0.0, "chi2_stat": 205856.61, "dof_chi2": 6, "p_val_chi2": 0.0, "contingency": {"a": {"a": 419642, "b": 4478, "c": 50968, "d": 108627}, "b": {"a": 3577, "b": 3683, "c": 0, "d": 0}, "c": {"a": 154658, "b": 0, "c": 23844, "d": 76795}}}, "ml": {"model_rows": 846272, "n_features_raw": 23, "n_features_encoded": 29, "train_rows": 677017, "test_rows": 169255, "train_date_range": ["2013-01-01", "2015-01-30"], "test_date_range": ["2015-01-30", "2015-07-31"], "models": [{"model": "Linear Regression", "train_r2": 0.5953, "train_rmspe": 30.34, "mae": 1049.56, "rmse": 1820.46, "mape": 15.17, "rmspe": 28.58, "r2": 0.6258, "time_s": 1.2}, {"model": "Ridge Regression", "train_r2": 0.5953, "train_rmspe": 30.34, "mae": 1049.55, "rmse": 1820.45, "mape": 15.17, "rmspe": 28.58, "r2": 0.6258, "time_s": 0.98}, {"model": "Decision Tree", "train_r2": 0.8804, "train_rmspe": 23.6, "mae": 719.03, "rmse": 1079.68, "mape": 10.9, "rmspe": 24.24, "r2": 0.8684, "time_s": 6.95}, {"model": "Random Forest", "train_r2": 0.8997, "train_rmspe": 22.21, "mae": 650.68, "rmse": 995.27, "mape": 9.73, "rmspe": 23.03, "r2": 0.8881, "time_s": 15.76}], "top10_importance": [{"feature": "Sales_rolling_mean_28", "label": "Sales_rolling_mean_28 (TB trượt 28 ngày)", "pct": 47.22}, {"feature": "Store_Avg_Sales", "label": "Store_Avg_Sales (Doanh số TB lịch sử chi nhánh)", "pct": 19.17}, {"feature": "Promo", "label": "Promo (Khuyến mãi ngắn hạn trong ngày)", "pct": 18.53}, {"feature": "DayOfWeek", "label": "DayOfWeek (Thứ trong tuần)", "pct": 4.17}, {"feature": "Sales_lag_1", "label": "Sales_lag_1 (Doanh số ngày liền trước)", "pct": 4.15}, {"feature": "CompetitionDistance", "label": "CompetitionDistance (Khoảng cách đối thủ)", "pct": 1.28}, {"feature": "Day", "label": "Day (Ngày trong tháng)", "pct": 0.92}, {"feature": "WeekOfYear", "label": "WeekOfYear (Tuần trong năm)", "pct": 0.68}, {"feature": "CompetitionOpenSinceYear", "label": "CompetitionOpenSinceYear", "pct": 0.49}, {"feature": "IsWeekend", "label": "IsWeekend (Cờ cuối tuần)", "pct": 0.48}]}};
+    const DAYS = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
+    const DAY_SHORT = { "Tất cả": "Tất cả", "Thứ 2": "T2", "Thứ 3": "T3", "Thứ 4": "T4", "Thứ 5": "T5", "Thứ 6": "T6", "Thứ 7": "T7", "Chủ Nhật": "CN" };
+
+    let currentStage = 1;
+    let selectedDay = "Tất cả";
+    let stage3Dim = "day";      // "day" | "storetype"
+    let stage4Mode = "overall"; // "overall" | "byday" | "ml"
+
+    function fmt(n) { return Number(n).toLocaleString('en-US'); }
+
+    function toggleSidebar() {
+      const sb = document.getElementById('sidebar');
+      const btn = document.getElementById('toggleBtn');
+      const collapsed = sb.classList.toggle('collapsed');
+      btn.textContent = collapsed ? '☰' : '◀';
+      btn.classList.toggle('closed', collapsed);
+      setTimeout(() => {
+        ['barChart', 'areaChart', 'hbarChart'].forEach(id => Plotly.Plots.resize(id));
+      }, 310);
+    }
+
+    function changeStage(st) {
+      currentStage = st;
+      selectedDay = "Tất cả";
+      document.getElementById('stageSelect').value = String(st);
+      document.querySelectorAll('.sidebar-stage-item').forEach(el => {
+        el.classList.toggle('active', Number(el.dataset.stage) === st);
+      });
+      renderAll();
+    }
+
+    function setDayFilter(d) {
+      selectedDay = (d !== "Tất cả" && selectedDay === d) ? "Tất cả" : d;
+      renderAll();
+    }
+
+    function setStage3Dim(dim) {
+      stage3Dim = dim;
+      renderAll();
+    }
+
+    function setStage4Mode(mode) {
+      stage4Mode = mode;
+      renderAll();
+    }
+
+    function renderKPIs(items) {
+      document.getElementById('kpiGrid').innerHTML = items.map(k => `
+        <div class="nexus-kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-title">${k.title}</span>
+            <span class="kpi-icon-box" style="background-color: ${k.iconBg};">${k.icon}</span>
+          </div>
+          <div class="kpi-val-row">
+            <span class="kpi-val">${k.val}</span>
+            <span class="${k.badgeCls}">${k.badge}</span>
+          </div>
+          <div class="kpi-sub">${k.sub}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderMiniStats(items) {
+      document.getElementById('miniStats').innerHTML = items.map(s => `
+        <div class="mini-stat">
+          <div class="mini-stat-label">${s.label}</div>
+          <div class="mini-stat-val" style="color: ${s.valColor || '#0F172A'};">${s.val}</div>
+          ${s.sub ? `<div class="mini-stat-sub" style="color: ${s.color || '#64748B'};">${s.sub}</div>` : ''}
+        </div>
+      `).join('');
+    }
+
+    function renderTable(headers, rows) {
+      const thead = `<thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>`;
+      const tbody = `<tbody>${rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody>`;
+      document.getElementById('auditTable').innerHTML = thead + tbody;
+    }
+
+    function renderFeed(items) {
+      document.getElementById('insightsFeed').innerHTML = items.map(it => `
+        <div class="feed-item">
+          <div class="feed-avatar" style="background: ${it.bg};">${it.icon}</div>
+          <div class="feed-body">
+            <div class="feed-top">
+              <span class="feed-name">${it.title}</span>
+              <span class="${it.badgeCls}">${it.badge}</span>
+            </div>
+            <div class="feed-desc">${it.desc}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderHBar(labels, values, texts, colors, maxRange) {
+      const paddedY = labels.map(l => l + '\u00A0\u00A0\u00A0\u00A0');
+      const paddedTxt = texts.map(t => '\u00A0\u00A0' + t);
+      Plotly.newPlot('hbarChart', [{
+        type: 'bar',
+        orientation: 'h',
+        y: paddedY.slice().reverse(),
+        x: values.slice().reverse(),
+        marker: { color: colors.slice().reverse(), line: { width: 0 } },
+        text: paddedTxt.slice().reverse(),
+        textposition: 'outside',
+        cliponaxis: false,
+        textfont: { size: 13, color: '#334155', family: 'Plus Jakarta Sans', weight: 'bold' }
+      }], {
+        bargap: 0.32,
+        margin: { l: 175, r: 58, t: 8, b: 18 },
+        paper_bgcolor: 'transparent',
+        plot_bgcolor: 'transparent',
+        xaxis: { range: [0, maxRange], showgrid: false, zeroline: false, showticklabels: false },
+        yaxis: { automargin: true, ticks: 'outside', ticklen: 5, tickcolor: 'transparent', tickfont: { size: 12.5, color: '#334155', family: 'Plus Jakarta Sans' } }
+      }, { displayModeBar: false, responsive: true });
+    }
+
+    function renderAll() {
+      const raw = M.raw, clean = M.clean, ml = M.ml;
+      const rf = ml.models.find(x => x.model === "Random Forest");
+      const banner = document.getElementById('crossFilterBanner');
+      const clearBtn = document.getElementById('clearFilterBtn');
+      const statusPill = document.getElementById('statusPill');
+
+      // ================= GIAI ĐOẠN 1 =================
+      if (currentStage === 1) {
+        document.getElementById('crumbSub').textContent = "1. Trước làm sạch";
+        document.getElementById('pageTitle').textContent = "1. Kiểm Toán Hiện Trạng Dữ Liệu Thô Trước Khi Làm Sạch";
+        statusPill.textContent = "⚠️ Dữ liệu thô (Chưa xử lý)";
+        statusPill.style.background = "#FFE4E6";
+        statusPill.style.color = "#BE123C";
+        banner.style.display = "flex";
+        clearBtn.classList.toggle('show', selectedDay !== "Tất cả");
+        document.getElementById('crossFilterMsg').innerHTML = selectedDay === "Tất cả"
+          ? '💡 <b>Lọc Chéo Power BI (Cross-Filtering):</b> Nhấp trực tiếp vào một cột thứ trên biểu đồ hoặc bấm nút ngày để làm mờ các thứ khác và lọc riêng 4 thẻ KPI.'
+          : `🎯 <b>Đang lọc chéo riêng ngày: ${selectedDay}</b> — Nhấp lại vào cột ${selectedDay} hoặc bấm nút bên phải để quay về toàn bộ 7 ngày.`;
+
+        if (selectedDay === "Tất cả") {
+          renderKPIs([
+            { title: "Ô Dữ Liệu Khuyết", val: fmt(raw.na_total), badge: "Sales: " + fmt(raw.na_sales), badgeCls: "kpi-badge-pink", sub: "Bảng Store khuyết thêm " + fmt(raw.na_store) + " ô", icon: "⚠️", iconBg: "#FFE4E6" },
+            { title: "Xung Đột Ràng Buộc Logic", val: fmt(raw.open0_sales_gt0), badge: "CN: 74.8%", badgeCls: "kpi-badge-pink", sub: "Đóng cửa (Open=0) nhưng có Sales", icon: "🚨", iconBg: "#FEF3C7" },
+            { title: "Sai Lệch Kiểu & Đơn Vị", val: fmt(raw.non_numeric_cells), badge: "VND / kg / %", badgeCls: "kpi-badge-blue", sub: "Thêm " + fmt(raw.sales_neg) + " ô âm & " + fmt(raw.dup_sales) + " trùng", icon: "🛠️", iconBg: "#EEF2FF" },
+            { title: "Dữ Liệu Đạt Chuẩn Ban Đầu", val: fmt(raw.clean_rows_initial), badge: (raw.clean_rows_initial/raw.sales_rows*100).toFixed(1) + "%", badgeCls: "kpi-badge-green", sub: "Trên tổng " + fmt(raw.sales_rows) + " dòng giao dịch gốc", icon: "📦", iconBg: "#DCFCE7" }
+          ]);
+        } else {
+          const dayErr = raw.err_by_day[selectedDay];
+          const pctErr = (dayErr / raw.open0_sales_gt0 * 100).toFixed(1);
+          renderKPIs([
+            { title: `Ô Dữ Liệu Khuyết (${selectedDay})`, val: fmt(raw.na_by_day[selectedDay]), badge: "Lọc chéo", badgeCls: "kpi-badge-pink", sub: "Ô NaN phát sinh vào " + selectedDay, icon: "⚠️", iconBg: "#FFE4E6" },
+            { title: "Xung Đột Ràng Buộc Logic", val: fmt(dayErr), badge: selectedDay === "Chủ Nhật" ? "🚨 Tâm điểm " + pctErr + "%" : pctErr + "% lỗi", badgeCls: "kpi-badge-pink", sub: selectedDay === "Chủ Nhật" ? "Chiếm 74.8% lỗi logic chuỗi" : "Đóng cửa (Open=0) nhưng có Sales", icon: "🚨", iconBg: selectedDay === "Chủ Nhật" ? "#FFE4E6" : "#FEF3C7" },
+            { title: `Sai Lệch Kiểu (${selectedDay})`, val: fmt(raw.non_num_by_day[selectedDay]), badge: "Nhiễu đơn vị", badgeCls: "kpi-badge-blue", sub: "Dòng chứa ký tự rác / đơn vị sai", icon: "🛠️", iconBg: "#EEF2FF" },
+            { title: `Đạt Chuẩn Thô (${selectedDay})`, val: fmt(raw.valid_by_day[selectedDay]), badge: "Sạch thô", badgeCls: "kpi-badge-green", sub: "Bản ghi sạch ban đầu trong ngày", icon: "📦", iconBg: "#DCFCE7" }
+          ]);
+        }
+
+        // Left Bar Chart: Grouped Moderate Soft Pastel (#F87171 & #94A3B8) + Power BI Cross-Highlight
+        document.getElementById('barTitle').textContent = "Phân Bố Dữ Liệu Thô & Vùng Lỗi Ràng Buộc Logic";
+        document.getElementById('barControls').innerHTML = `<div class="pill-btn-group">` +
+          ["Tất cả", ...DAYS].map(d => `<button class="pill-btn stage1-btn ${selectedDay===d?'active':''}" onclick="setDayFilter('${d}')">${DAY_SHORT[d]}</button>`).join('') + `</div>`;
+        if (selectedDay === "Tất cả") {
+          document.getElementById('barBigNum').textContent = fmt(raw.open0_sales_gt0) + " Lỗi";
+          document.getElementById('barBadge').innerHTML = `<span class="kpi-badge-pink">⚠️ Cần lọc bỏ</span>`;
+          document.getElementById('barSub').textContent = "Đóng cửa (Open=0) nhưng có Sales ảo";
+        } else {
+          document.getElementById('barBigNum').textContent = fmt(raw.err_by_day[selectedDay]) + " Lỗi";
+          document.getElementById('barBadge').innerHTML = `<span class="kpi-badge-pink">Đang lọc: ${selectedDay}</span>`;
+          document.getElementById('barSub').textContent = selectedDay === "Chủ Nhật" ? "Chiếm 74.8% lỗi logic toàn chuỗi" : "Phân tích riêng cho " + selectedDay;
+        }
+
+        const errY = DAYS.map(d => raw.err_by_day[d]);
+        const validScaled = DAYS.map(d => Math.round(raw.valid_by_day[d] / 10)); // quy đổi hàng chục dòng để so đối xứng trực quan
+        const colErr = DAYS.map(d => (selectedDay==="Tất cả" || d===selectedDay) ? "#F87171" : "rgba(248,113,113,0.18)");
+        const colVal = DAYS.map(d => (selectedDay==="Tất cả" || d===selectedDay) ? "#94A3B8" : "rgba(148,163,184,0.18)");
+        const lnErr = DAYS.map(d => (selectedDay!=="Tất cả" && d===selectedDay) ? "#DC2626" : "transparent");
+        const lnW = DAYS.map(d => (selectedDay!=="Tất cả" && d===selectedDay) ? 2 : 0);
+
+        Plotly.newPlot('barChart', [
+          {
+            name: 'Lỗi Sales Ảo (Open=0)',
+            x: DAYS, y: errY, type: 'bar',
+            marker: { color: colErr, line: { color: lnErr, width: lnW } },
+            text: errY.map((v, i) => (selectedDay==="Tất cả" || DAYS[i]===selectedDay) ? fmt(v) : ''),
+            textposition: 'outside',
+            textfont: { size: 12.5, color: '#BE123C', family: 'Plus Jakarta Sans' }
+          },
+          {
+            name: 'Bản Ghi Hợp Lệ Thô (×10 dòng)',
+            x: DAYS, y: validScaled, type: 'bar',
+            customdata: DAYS.map(d => raw.valid_by_day[d]),
+            hovertemplate: '<b>%{x}</b><br>Hợp lệ thô: %{customdata:,} dòng<extra></extra>',
+            marker: { color: colVal }
+          }
+        ], {
+          barmode: 'group', bargap: 0.25, bargroupgap: 0.08,
+          margin: { l: 45, r: 12, t: 28, b: 32 },
+          paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+          yaxis: { range: [0, 4900], gridcolor: '#F1F5F9' },
+          xaxis: { tickfont: { size: 12.5, color: '#334155' } },
+          legend: { orientation: 'h', y: 1.12, x: 1, xanchor: 'right', font: { size: 12 } }
+        }, { displayModeBar: false, responsive: true });
+
+        const barEl = document.getElementById('barChart');
+        barEl.on('plotly_click', data => {
+          if (data && data.points && data.points.length) {
+            setDayFilter(data.points[0].x);
+          }
+        });
+
+        // Right Area Chart + 3 Mini Stats
+        document.getElementById('areaTitle').textContent = selectedDay === "Tất cả" ? "Mật Độ Ô Khuyết Theo Thứ Trong Tuần" : `Mật Độ Ô Khuyết: ${selectedDay}`;
+        renderMiniStats([
+          { label: "Sales Khuyết", val: selectedDay === "Tất cả" ? "858.0K" : (raw.na_by_day[selectedDay]/1000).toFixed(1) + "K", color: "#E11D48" },
+          { label: "Store Khuyết", val: fmt(raw.na_store), color: "#F97316" },
+          { label: "Sales Âm", val: fmt(raw.sales_neg), color: "#6366F1" }
+        ]);
+        const naY = DAYS.map(d => raw.na_by_day[d]);
+        Plotly.newPlot('areaChart', [{
+          x: DAYS, y: naY, type: 'scatter', mode: 'lines+markers', fill: 'tozeroy',
+          line: { color: '#FB7185', width: 3, shape: 'spline' },
+          marker: { size: 7, color: DAYS.map(d => (selectedDay==="Tất cả" || d===selectedDay) ? '#E11D48' : '#FECDD3') },
+          fillcolor: 'rgba(251,113,133,0.16)'
+        }], {
+          margin: { l: 52, r: 12, t: 10, b: 30 },
+          paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+          yaxis: { gridcolor: '#F1F5F9', tickfont: { size: 11.5 } },
+          xaxis: { tickfont: { size: 11.5 } }
+        }, { displayModeBar: false, responsive: true });
+
+        // Tier 1: 4-Column Audit Table
+        document.getElementById('tableTitle').textContent = "Top 5 Vi Phạm Dữ Liệu Thô";
+        document.getElementById('tableTag').textContent = "Kiểm toán trực tiếp CSV gốc";
+        renderTable(
+          ["Hạng Mục Lỗi", "Vấn Đề Phát Hiện", "Quy Mô Thực Tế", "Trạng Thái"],
+          [
+            ["<b>Ô Dữ Liệu Khuyết (NaN)</b>", "Khuyết Store, Date, Promo2, CompetitionDistance", `<b>${fmt(raw.na_total)} ô</b>`, `<span class="kpi-badge-pink">Cần khôi phục</span>`],
+            ["<b>Nhiễu Đơn Vị & Sai Kiểu</b>", "Chuỗi lẫn VND, USD, kg, %, đ và ký tự rác ?, -", `<b>${fmt(raw.non_numeric_cells)} ô</b>`, `<span class="kpi-badge-blue">Cần Regex</span>`],
+            ["<b>Doanh Số Âm (Sales &lt; 0)</b>", "Chứa mã sentinel -1 và lỗi nhập âm tại POS", `<b>${fmt(raw.sales_neg)} dòng</b>`, `<span class="kpi-badge-pink">Cần loại nhiễu</span>`],
+            ["<b>Bản Ghi Trùng Lặp Thô</b>", "Ghi đúp bản ghi & trùng khóa phức hợp (Store, Date)", `<b>${fmt(raw.dup_sales)} dòng</b>`, `<span class="kpi-badge-pink">Cần khử trùng</span>`],
+            ["<b>Xung Đột Open=0 &amp; Sales&gt;0</b>", `Cửa hàng đóng cửa nhưng có doanh số (CN: ${fmt(raw.err_by_day["Chủ Nhật"])})`, `<b>${fmt(raw.open0_sales_gt0)} dòng</b>`, `<span class="kpi-badge-pink">Cần ép logic</span>`]
+          ]
+        );
+
+        // Tier 2 Left: Cảnh Báo Hoạt Động
+        document.getElementById('feedTitle').textContent = "Cảnh Báo Rủi Ro Dữ Liệu Thô";
+        renderFeed([
+          { icon: "🚨", bg: "#FFE4E6", title: `${fmt(raw.open0_sales_gt0)} Ngày Xung Đột Logic`, badge: "Nghiêm trọng", badgeCls: "kpi-badge-pink", desc: "Đóng cửa (Open=0) nhưng phát sinh Sales, Chủ Nhật chiếm 74.8%." },
+          { icon: "⚠️", bg: "#FEF3C7", title: `${fmt(raw.na_total)} Ô Giá Trị Khuyết`, badge: "Toàn bảng", badgeCls: "kpi-badge-pink", desc: `Bảng Sales khuyết ${fmt(raw.na_sales)} ô và bảng Store khuyết ${fmt(raw.na_store)} ô.` },
+          { icon: "🔗", bg: "#EEF2FF", title: "150,902 Dòng Khuyết Khóa Store", badge: "Khóa ngoại", badgeCls: "kpi-badge-blue", desc: "Ghép bảng thô trước khi sửa Store gây bùng nổ tích Descartes 8.81M dòng." },
+          { icon: "📉", bg: "#F5F3FF", title: "Nhiễu Nhân x1000 Làm Méo Mean", badge: "Ngoại lai", badgeCls: "kpi-badge-blue", desc: `Mean thô bị kéo lên ${fmt(raw.sales_mean_all)} € và tương quan r rơi về -0.0021.` }
+        ]);
+
+        // Tier 2 Right: Single-Hue Rose/Coral Gradient HBar
+        document.getElementById('hbarTitle').textContent = "Xếp Hạng Quy Mô Nhóm Lỗi Thô (Nghìn Ô/Dòng)";
+        const hVals1 = [raw.na_total/1000, raw.non_numeric_cells/1000, raw.sales_neg/1000, raw.dup_sales/1000, raw.open0_sales_gt0/1000];
+        renderHBar(
+          ["Ô khuyết (NaN)", "Nhiễu đơn vị", "Doanh số âm", "Trùng lặp thô", "Lỗi Open=0"],
+          hVals1,
+          hVals1.map(v => v.toFixed(1) + "K"),
+          ["#E11D48", "#F43F5E", "#FB7185", "#FDA4AF", "#FECDD3"],
+          Math.max(...hVals1) * 1.28
+        );
+
+      // ================= GIAI ĐOẠN 2 =================
+      } else if (currentStage === 2) {
+        document.getElementById('crumbSub').textContent = "2. Đang xử lý";
+        document.getElementById('pageTitle').textContent = "2. Tiến Trình 7 Giai Đoạn Khôi Phục & Chuẩn Hóa Dữ Liệu";
+        statusPill.textContent = "🛠️ Pipeline Hoàn Tất (100%)";
+        statusPill.style.background = "#FEF3C7";
+        statusPill.style.color = "#B45309";
+        banner.style.display = "none";
+
+        renderKPIs([
+          { title: "Tiết Kiệm Bộ Nhớ RAM", val: clean.ram_saved_pct.toFixed(1) + "%", badge: "↑ " + clean.ram_after_mb.toFixed(1) + " MB", badgeCls: "kpi-badge-green", sub: `Giảm từ ${clean.ram_before_mb} MB sau Downcasting`, icon: "🔄", iconBg: "#DCFCE7" },
+          { title: "Đã Triệt Tiêu Bất Thường", val: fmt(raw.open0_sales_gt0), badge: "100% Xong", badgeCls: "kpi-badge-green", sub: "Ép ràng buộc Open=0 ➔ Sales=0", icon: "✅", iconBg: "#DCFCE7" },
+          { title: "Đồng Bộ Mã Chi Nhánh", val: "1,115", badge: "Khóa ngoại 100%", badgeCls: "kpi-badge-blue", sub: "Đồng nhất 1,115 Stores toàn chuỗi", icon: "🏪", iconBg: "#EEF2FF" },
+          { title: "Nén Lưu Trữ Nhị Phân", val: clean.bin_size_mb.toFixed(2) + " MB", badge: "↓ 94.9% đĩa", badgeCls: "kpi-badge-pink", sub: `${clean.bin_format} vs CSV ${clean.csv_size_mb} MB`, icon: "⏳", iconBg: "#FEF3C7" }
+        ]);
+
+        document.getElementById('barTitle').textContent = "Tiến Trình Hoàn Thành Qua 7 Giai Đoạn Cốt Lõi";
+        document.getElementById('barControls').innerHTML = "";
+        document.getElementById('barBigNum').textContent = "100%";
+        document.getElementById('barBadge').innerHTML = `<span class="kpi-badge-green">↑ Hoàn tất chuẩn hóa</span>`;
+        document.getElementById('barSub').textContent = "Xử lý tuần tự, kiểm soát khóa toàn vẹn";
+
+        const st7 = ['GĐ1: Kiểm toán', 'GĐ2: Logic Đóng/Mở', 'GĐ3: Ngày giờ', 'GĐ4: Trung vị', 'GĐ5: Điền số 0', 'GĐ6: Điểm ngoại lai', 'GĐ7: Tối ưu & Nén'];
+        const target7 = [100, 100, 100, 100, 100, 100, 100];
+        const actual7 = [100, 100, 100, 100, 100, 100, 100];
+        Plotly.newPlot('barChart', [
+          {
+            name: 'Ngưỡng Đạt Chuẩn',
+            x: st7, y: target7, type: 'bar',
+            marker: { color: '#CBD5E1', line: { width: 0 } },
+            hovertemplate: '<b>%{x}</b><br>Ngưỡng Đạt Chuẩn: %{y}%<extra></extra>'
+          },
+          {
+            name: 'Tỷ Lệ Thực Hiện Thực Tế',
+            x: st7, y: actual7, type: 'bar',
+            marker: { color: '#6366F1', line: { width: 0 } },
+            hovertemplate: '<b>%{x}</b><br>Thực hiện thực tế: %{y}%<extra></extra>'
+          }
+        ], {
+          barmode: 'group', bargap: 0.26, bargroupgap: 0.08,
+          margin: { l: 38, r: 12, t: 30, b: 38 },
+          paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+          yaxis: { range: [0, 112], dtick: 20, gridcolor: '#F1F5F9', zerolinecolor: '#E2E8F0', tickfont: { size: 11.5, color: '#94A3B8' } },
+          xaxis: { tickfont: { size: 11.5, color: '#64748B' } },
+          legend: { orientation: 'h', y: 1.13, x: 1, xanchor: 'right', font: { size: 12, color: '#475569' } }
+        }, { displayModeBar: false, responsive: true });
+
+        document.getElementById('areaTitle').textContent = "Tốc Độ Hội Tụ & Triệt Tiêu Ô Lỗi Qua Các Bước";
+        renderMiniStats([
+          { label: "Lỗi Triệt Tiêu", val: "100%", sub: "↓ Giảm dốc", color: "#15803D" },
+          { label: "Tiết Kiệm RAM", val: clean.ram_saved_pct.toFixed(1) + "%", sub: "Tối ưu hóa", color: "#4361EE" },
+          { label: "Độ Hội Tụ", val: "0 NaN", sub: "Ổn định", color: "#0D9488" }
+        ]);
+        const convX = ['GĐ1', 'GĐ2', 'GĐ3', 'GĐ4', 'GĐ5', 'GĐ6', 'GĐ7'];
+        const convY = [raw.na_total, 710062, 560960, 215000, 38500, 2276, 0];
+        Plotly.newPlot('areaChart', [{
+          x: convX, y: convY, type: 'scatter', mode: 'lines', fill: 'tozeroy',
+          line: { color: '#60A5FA', width: 3, shape: 'spline' },
+          fillcolor: 'rgba(96, 165, 250, 0.16)',
+          hovertemplate: '<b>%{x}</b><br>Ô khuyết/lỗi còn lại: %{y:,}<extra></extra>'
+        }], {
+          margin: { l: 42, r: 12, t: 10, b: 28 },
+          paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+          yaxis: { gridcolor: '#F1F5F9', zerolinecolor: '#E2E8F0', tickfont: { size: 11.5, color: '#94A3B8' } },
+          xaxis: { tickfont: { size: 11.5, color: '#64748B' } }
+        }, { displayModeBar: false, responsive: true });
+
+        document.getElementById('tableTitle').textContent = "Top 5 Ca Xử Lý Thuật Toán Cốt Lõi";
+        document.getElementById('tableTag').textContent = "run_pipeline.py (PEP 8)";
+        renderTable(
+          ["Bước Pipeline", "Thuật Toán Áp Dụng", "Kỹ Thuật Python", "Trạng Thái"],
+          [
+            ["<b>1. Nạp Phân Đoạn</b>", "Đọc tệp >1 triệu dòng ổn định bộ nhớ", "<code>pd.read_csv(chunksize=200_000)</code> (6 chunks)", `<span class="kpi-badge-green">Hoàn tất</span>`],
+            ["<b>2. Làm Sạch Khóa Store</b>", "Khử hậu tố đơn vị & nội suy khóa [1..1,115]", "<code>str.replace(regex)</code> + <code>interpolate()</code>", `<span class="kpi-badge-green">Hoàn tất</span>`],
+            ["<b>3. Ngoại Lai 2 Phía</b>", "Chặn ngoại lai trên 3×IQR & dưới 500 €", "Trung vị phân tầng <code>(Store, DayOfWeek, Promo)</code>", `<span class="kpi-badge-green">Hoàn tất</span>`],
+            ["<b>4. Ghép Bảng Quan Hệ</b>", "Liên kết Fact–Dimension chống tích Descartes", "<code>pd.merge(..., how='left', validate='many_to_one')</code>", `<span class="kpi-badge-green">Hoàn tất</span>`],
+            ["<b>5. Tối Ưu RAM & Đĩa</b>", "Ép kiểu int8/int16/float32/category & nén gzip", `RAM <b>-85.87%</b> | Đĩa <b>-94.88%</b> (3.61 MB)`, `<span class="kpi-badge-blue">Tối ưu</span>`]
+          ]
+        );
+
+        document.getElementById('feedTitle').textContent = "Tiến Độ 7 Giai Đoạn Xử Lý";
+        renderFeed([
+          { icon: "🧩", bg: "#DCFCE7", title: "Chống Bùng Nổ Tích Descartes", badge: "An toàn", badgeCls: "kpi-badge-green", desc: "Làm sạch Store trước khi merge với validate='many_to_one'." },
+          { icon: "📅", bg: "#EEF2FF", title: "Chuẩn Hóa Thời Gian ISO-8601", badge: "100%", badgeCls: "kpi-badge-blue", desc: "Tái tính chính xác DayOfWeek từ Date trên 1,014,933 dòng." },
+          { icon: "🧹", bg: "#DCFCE7", title: "Đồng Bộ Tuyệt Đối Promo2", badge: "0 NaN", badgeCls: "kpi-badge-green", desc: "Ép PromoInterval='None' và tuần/năm=0 cho mọi dòng Promo2=0." },
+          { icon: "🛡️", bg: "#F5F3FF", title: "Kiểm Toán Không Rò Rỉ Dữ Liệu", badge: "Chuẩn ML", badgeCls: "kpi-badge-blue", desc: "Loại bỏ hoàn toàn biến Customers trước giai đoạn huấn luyện." }
+        ]);
+
+        // Single-Hue Teal / Mint Gradient HBar
+        document.getElementById('hbarTitle').textContent = "Tỷ Lệ Tối Ưu Hóa Tài Nguyên Theo Nhóm (%)";
+        renderHBar(
+          ["Nén tệp nhị phân", "Biến Category", "Số nguyên int8/16", "Tổng RAM bảng", "Số thực float32"],
+          [94.9, 88.0, 87.5, clean.ram_saved_pct, 50.0],
+          ["94.9%", "88.0%", "87.5%", clean.ram_saved_pct.toFixed(1) + "%", "50.0%"],
+          ["#0F766E", "#0D9488", "#14B8A6", "#2DD4BF", "#5EEAD4"],
+          118
+        );
+
+      // ================= GIAI ĐOẠN 3 =================
+      } else if (currentStage === 3) {
+        document.getElementById('crumbSub').textContent = "3. Sau làm sạch";
+        document.getElementById('pageTitle').textContent = "3. Tập Dữ Liệu Sạch Hoàn Chỉnh & Thông Minh Kinh Doanh";
+        statusPill.textContent = "✓ 100% Sạch & Chuẩn ML";
+        statusPill.style.background = "#DCFCE7";
+        statusPill.style.color = "#15803D";
+        banner.style.display = "none";
+
+        renderKPIs([
+          { title: "Doanh Thu TB Ngày Mở", val: fmt(Math.round(clean.desc_quant.Sales.mean)) + " €", badge: "+" + clean.promo_lift_pct.toFixed(2) + "% Promo", badgeCls: "kpi-badge-green", sub: `Trung vị: ${fmt(clean.desc_quant.Sales.median)} € (Q1–Q3: 4,870–8,249 €)`, icon: "💶", iconBg: "#DCFCE7" },
+          { title: "Tổng Bản Ghi Sạch Chuẩn", val: fmt(clean.total_rows), badge: fmt(clean.open_days) + " mở", badgeCls: "kpi-badge-green", sub: "0 ô khuyết • 0 trùng khóa (Store, Date)", icon: "📦", iconBg: "#EEF2FF" },
+          { title: "Lượng Khách Ghé Thăm TB", val: fmt(Math.round(clean.desc_quant.Customers.mean)), badge: "r = " + clean.corr_sales_customers.toFixed(4), badgeCls: "kpi-badge-blue", sub: `Trung vị: ${fmt(clean.desc_quant.Customers.median)} lượt (R² = 63.3%)`, icon: "👥", iconBg: "#F5F3FF" },
+          { title: "Mạng Lưới Chi Nhánh", val: "1,115", badge: "Store b: 10,324€", badgeCls: "kpi-badge-green", sub: "ANOVA F = 3,679.52 (p < 0.0001)", icon: "🏪", iconBg: "#E0F2FE" }
+        ]);
+
+        document.getElementById('barTitle').textContent = "Thống Kê Doanh Thu & Lượng Khách Chuẩn";
+        document.getElementById('barControls').innerHTML = `
+          <div class="pill-btn-group">
+            <button class="pill-btn ${stage3Dim==='day'?'active':''}" onclick="setStage3Dim('day')">Thứ trong tuần</button>
+            <button class="pill-btn ${stage3Dim==='storetype'?'active':''}" onclick="setStage3Dim('storetype')">Mô hình cửa hàng</button>
+          </div>`;
+        document.getElementById('barBigNum').textContent = fmt(Math.round(clean.desc_quant.Sales.mean)) + " €";
+        document.getElementById('barBadge').innerHTML = `<span class="kpi-badge-green">↑ +${clean.promo_lift_pct.toFixed(2)}% khi có Promo</span>`;
+        document.getElementById('barSub').textContent = "Doanh số phân tầng theo chu kỳ kinh doanh";
+
+        if (stage3Dim === "day") {
+          const sY = DAYS.map(d => clean.mean_by_day[d]);
+          const cY = DAYS.map(d => clean.cust_by_day[d]);
+          Plotly.newPlot('barChart', [
+            {
+              name: 'Lượng khách (×4 để đồng trục)',
+              x: DAYS, y: cY.map(v => v * 4), customdata: cY, type: 'bar',
+              marker: { color: '#818CF8' },
+              hovertemplate: '<b>%{x}</b><br>Khách TB: %{customdata:,.0f} lượt<extra></extra>'
+            },
+            {
+              name: 'Doanh thu bán hàng (€)',
+              x: DAYS, y: sY, type: 'bar',
+              marker: { color: '#2DD4BF' },
+              hovertemplate: '<b>%{x}</b><br>Doanh số TB: %{y:,.0f} €<extra></extra>'
+            }
+          ], {
+            barmode: 'group', bargap: 0.25, bargroupgap: 0.08,
+            margin: { l: 48, r: 12, t: 25, b: 32 },
+            paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+            yaxis: { gridcolor: '#F1F5F9' },
+            legend: { orientation: 'h', y: 1.12, x: 1, xanchor: 'right', font: { size: 12 } }
+          }, { displayModeBar: false, responsive: true });
+        } else {
+          const stL = ['Store a (Dân cư)', 'Store b (Nhà ga)', 'Store c (Phố)', 'Store d (Ngoại ô)'];
+          const stMean = [clean.storetype_stats.a.mean, clean.storetype_stats.b.mean, clean.storetype_stats.c.mean, clean.storetype_stats.d.mean];
+          const stMed = [clean.storetype_stats.a.median, clean.storetype_stats.b.median, clean.storetype_stats.c.median, clean.storetype_stats.d.median];
+          Plotly.newPlot('barChart', [
+            { name: 'Trung vị (Median €)', x: stL, y: stMed, type: 'bar', marker: { color: '#818CF8' } },
+            { name: 'Trung bình (Mean €)', x: stL, y: stMean, type: 'bar', marker: { color: '#2DD4BF' }, text: stMean.map(v => fmt(Math.round(v)) + ' €'), textposition: 'outside' }
+          ], {
+            barmode: 'group', bargap: 0.25, bargroupgap: 0.08,
+            margin: { l: 48, r: 12, t: 28, b: 32 },
+            paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+            yaxis: { range: [0, 12000], gridcolor: '#F1F5F9' },
+            legend: { orientation: 'h', y: 1.12, x: 1, xanchor: 'right', font: { size: 12 } }
+          }, { displayModeBar: false, responsive: true });
+        }
+
+        document.getElementById('areaTitle').textContent = "Xu Hướng Lượng Khách Ghé Thăm Theo Thứ";
+        renderMiniStats([
+          { label: "Khách TB/Ngày", val: fmt(Math.round(clean.desc_quant.Customers.mean)), color: "#4361EE" },
+          { label: "Trung Vị", val: fmt(clean.desc_quant.Customers.median), color: "#0D9488" },
+          { label: "Tương Quan r", val: clean.corr_sales_customers.toFixed(4), color: "#15803D" }
+        ]);
+        const cDay = DAYS.map(d => clean.cust_by_day[d]);
+        Plotly.newPlot('areaChart', [{
+          x: DAYS, y: cDay, type: 'scatter', mode: 'lines+markers', fill: 'tozeroy',
+          line: { color: '#6366F1', width: 3, shape: 'spline' },
+          marker: { size: 7, color: '#4361EE' },
+          fillcolor: 'rgba(99,102,241,0.16)'
+        }], {
+          margin: { l: 48, r: 12, t: 10, b: 30 },
+          paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+          yaxis: { gridcolor: '#F1F5F9', tickfont: { size: 11.5 } },
+          xaxis: { tickfont: { size: 11.5 } }
+        }, { displayModeBar: false, responsive: true });
+
+        document.getElementById('tableTitle').textContent = "Top 5 Chi Nhánh Doanh Thu Dẫn Đầu";
+        document.getElementById('tableTag').textContent = "Tính trực tiếp từ dữ liệu sạch";
+        renderTable(
+          ["Chi Nhánh", "Mô Hình", "Doanh Số TB (€/ngày mở)", "Trạng Thái"],
+          clean.top5_stores.map((s, idx) => [
+            `<b>#${idx+1} • Store ${s.store}</b>`,
+            `StoreType <b>${s.type}</b>`,
+            `<b>${fmt(s.avg_sales.toFixed(2))} €</b>`,
+            `<span class="kpi-badge-green">Đạt chuẩn 100%</span>`
+          ])
+        );
+
+        document.getElementById('feedTitle').textContent = "Cảnh Báo & Khuyến Nghị Kinh Doanh";
+        renderFeed([
+          { icon: "🚆", bg: "#DCFCE7", title: "StoreType b Dẫn Đầu (10,324 €/ngày)", badge: "Gấp 1.51×", badgeCls: "kpi-badge-green", desc: "Chỉ chiếm 0.96% số ngày mở cửa nhưng tạo doanh thu vượt trội." },
+          { icon: "🏷️", bg: "#EEF2FF", title: "Đòn Bẩy Promo Tăng +38.84%", badge: "t = 368.65", badgeCls: "kpi-badge-blue", desc: `Tăng +${fmt(clean.promo_diff)} €/ngày (8,148 € vs 5,869 €), p < 0.0001.` },
+          { icon: "📦", bg: "#F5F3FF", title: "Danh Mục Mở Rộng Assortment c (+8.88%)", badge: "χ² = 205.9K", badgeCls: "kpi-badge-blue", desc: "Đạt 7,286 €/ngày, phụ thuộc chặt với StoreType (p < 0.0001)." },
+          { icon: "📍", bg: "#FEF3C7", title: "Cạnh Tranh Địa Phương Dày Đặc", badge: "Med 2.37 km", badgeCls: "kpi-badge-pink", desc: "25% chi nhánh có đối thủ trong bán kính dưới 970 m." }
+        ]);
+
+        // Single-Hue Nexus Royal Blue / Indigo Gradient HBar
+        document.getElementById('hbarTitle').textContent = "Xếp Hạng Danh Mục & Phân Khúc Trọng Tâm (€)";
+        const segL = ['StoreType b', 'Có Promo (1)', 'Assortment b', 'Assortment c', 'StoreType a', 'Không Promo (0)'];
+        const segV = [clean.storetype_stats.b.mean, clean.promo1_mean, clean.assortment_stats.b.mean, clean.assortment_stats.c.mean, clean.storetype_stats.a.mean, clean.promo0_mean];
+        renderHBar(
+          segL, segV,
+          segV.map(v => fmt(Math.round(v)) + " €"),
+          ["#3730A3", "#4361EE", "#6366F1", "#818CF8", "#93C5FD", "#BFDBFE"],
+          12600
+        );
+
+      // ================= GIAI ĐOẠN 4 =================
+      } else {
+        document.getElementById('crumbSub').textContent = "4. Đối chiếu Trước vs Sau";
+        document.getElementById('pageTitle').textContent = "4. Đối Chiếu Trực Tiếp: Trước vs Sau Làm Sạch & Mô Hình ML";
+        statusPill.textContent = "⚖️ So Sánh Trước vs Sau";
+        statusPill.style.background = "#EEF2FF";
+        statusPill.style.color = "#4361EE";
+        banner.style.display = "none";
+
+        const rawAvg = raw.mean_raw_valid_overall;
+        const cleanAvg = clean.desc_quant.Sales.mean;
+        const diffAvg = cleanAvg - rawAvg;
+        const pctDiff = (diffAvg / rawAvg * 100);
+
+        renderKPIs([
+          { title: "Hiệu Chỉnh Doanh Thu TB", val: fmt(Math.round(cleanAvg)) + " €", badge: `↑ +${pctDiff.toFixed(1)}%`, badgeCls: "kpi-badge-green", sub: `${fmt(Math.round(rawAvg))} € thô hợp lệ ➔ ${fmt(Math.round(cleanAvg))} € sạch`, icon: "💶", iconBg: "#DCFCE7" },
+          { title: "Random Forest (Test R²)", val: rf.r2.toFixed(4), badge: `Train ${rf.train_r2.toFixed(4)}`, badgeCls: "kpi-badge-green", sub: "Không Overfitting • Pipeline Sklearn", icon: "🏆", iconBg: "#DCFCE7" },
+          { title: "Sai Số Dự Báo (Test MAE)", val: fmt(Math.round(rf.mae)) + " €", badge: `MAPE ${rf.mape.toFixed(2)}%`, badgeCls: "kpi-badge-blue", sub: `RMSE: ${fmt(Math.round(rf.rmse))} € | RMSPE: ${rf.rmspe.toFixed(2)}%`, icon: "🎯", iconBg: "#EEF2FF" },
+          { title: "Triệt Tiêu Ô Khuyết", val: "0 Ô Khuyết", badge: "↓ -100%", badgeCls: "kpi-badge-green", sub: `${fmt(raw.na_total)} ô thô ➔ 0 ô sạch`, icon: "✅", iconBg: "#DCFCE7" }
+        ]);
+
+        document.getElementById('barTitle').textContent = stage4Mode === "ml"
+          ? "So Sánh Hiệu Năng 4 Mô Hình Học Máy (Test R² & RMSPE)"
+          : "Đối Chiếu Doanh Thu Bình Quân: Trước vs Sau Làm Sạch (€)";
+        document.getElementById('barControls').innerHTML = `
+          <div class="pill-btn-group">
+            <button class="pill-btn ${stage4Mode==='overall'?'active':''}" onclick="setStage4Mode('overall')">Tổng thể (2 Cột)</button>
+            <button class="pill-btn ${stage4Mode==='byday'?'active':''}" onclick="setStage4Mode('byday')">Bóc tách theo thứ</button>
+            <button class="pill-btn ${stage4Mode==='ml'?'active':''}" onclick="setStage4Mode('ml')">4 Mô hình ML</button>
+          </div>`;
+
+        if (stage4Mode === "overall") {
+          document.getElementById('barBigNum').textContent = "+" + fmt(Math.round(diffAvg)) + " €";
+          document.getElementById('barBadge').innerHTML = `<span class="kpi-badge-green">↑ +${pctDiff.toFixed(1)}% Chuẩn hóa</span>`;
+          document.getElementById('barSub').textContent = `${fmt(Math.round(rawAvg))} € thô ➔ ${fmt(Math.round(cleanAvg))} € sạch chuẩn`;
+
+          Plotly.newPlot('barChart', [
+            {
+              name: 'Trước Làm Sạch (Thô hợp lệ)',
+              x: ['Trước Làm Sạch<br>(Dữ liệu thô lọc biên)'],
+              y: [rawAvg], type: 'bar', width: [0.36],
+              marker: { color: '#94A3B8' },
+              text: [`<b>${fmt(Math.round(rawAvg))} €</b>`], textposition: 'outside',
+              textfont: { size: 15, color: '#475569', family: 'Plus Jakarta Sans' }
+            },
+            {
+              name: 'Sau Làm Sạch (Open=1 sạch)',
+              x: ['Sau Làm Sạch<br>(Dữ liệu sạch chuẩn)'],
+              y: [cleanAvg], type: 'bar', width: [0.36],
+              marker: { color: '#2DD4BF' },
+              text: [`<b>${fmt(Math.round(cleanAvg))} €</b> (↑ +${pctDiff.toFixed(1)}%)`], textposition: 'outside',
+              textfont: { size: 15, color: '#0F172A', family: 'Plus Jakarta Sans' }
+            }
+          ], {
+            barmode: 'group', bargap: 0.35,
+            margin: { l: 50, r: 15, t: 32, b: 38 },
+            paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+            yaxis: { range: [0, 8400], ticksuffix: ' €', gridcolor: '#F1F5F9' },
+            legend: { orientation: 'h', y: 1.12, x: 1, xanchor: 'right', font: { size: 12 } }
+          }, { displayModeBar: false, responsive: true });
+
+        } else if (stage4Mode === "byday") {
+          document.getElementById('barBigNum').textContent = "Chủ Nhật: +7,268 €";
+          document.getElementById('barBadge').innerHTML = `<span class="kpi-badge-green">Phục hồi mạnh nhất</span>`;
+          document.getElementById('barSub').textContent = "779 € thô (dính ngày đóng) ➔ 8,047 € sạch";
+
+          Plotly.newPlot('barChart', [
+            { name: `Dữ Liệu Thô (${fmt(Math.round(rawAvg))} € TB)`, x: DAYS, y: DAYS.map(d => raw.mean_by_day_raw_valid[d]), type: 'bar', marker: { color: '#94A3B8' } },
+            { name: `Dữ Liệu Sạch (${fmt(Math.round(cleanAvg))} € TB)`, x: DAYS, y: DAYS.map(d => clean.mean_by_day[d]), type: 'bar', marker: { color: '#2DD4BF' } }
+          ], {
+            barmode: 'group', bargap: 0.25, bargroupgap: 0.08,
+            margin: { l: 48, r: 12, t: 25, b: 32 },
+            paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+            yaxis: { gridcolor: '#F1F5F9' },
+            legend: { orientation: 'h', y: 1.12, x: 1, xanchor: 'right', font: { size: 12 } }
+          }, { displayModeBar: false, responsive: true });
+
+        } else {
+          document.getElementById('barBigNum').textContent = "R² = " + rf.r2.toFixed(4);
+          document.getElementById('barBadge').innerHTML = `<span class="kpi-badge-green">🏆 Random Forest Quán Quân</span>`;
+          document.getElementById('barSub').textContent = "Test MAPE = 9.73% | RMSPE = 23.03%";
+
+          const mn = ml.models.map(x => x.model);
+          Plotly.newPlot('barChart', [
+            { name: 'Test R² (%)', x: mn, y: ml.models.map(x => +(x.r2*100).toFixed(2)), type: 'bar', marker: { color: '#2DD4BF' }, text: ml.models.map(x => (x.r2*100).toFixed(1)+'%'), textposition: 'outside' },
+            { name: 'Test RMSPE (%)', x: mn, y: ml.models.map(x => x.rmspe), type: 'bar', marker: { color: '#94A3B8' }, text: ml.models.map(x => x.rmspe.toFixed(1)+'%'), textposition: 'outside' }
+          ], {
+            barmode: 'group', bargap: 0.25, bargroupgap: 0.08,
+            margin: { l: 45, r: 12, t: 28, b: 32 },
+            paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+            yaxis: { range: [0, 108], gridcolor: '#F1F5F9' },
+            legend: { orientation: 'h', y: 1.12, x: 1, xanchor: 'right', font: { size: 12 } }
+          }, { displayModeBar: false, responsive: true });
+        }
+
+        document.getElementById('areaTitle').textContent = "Top 6 Đặc Trưng Quan Trọng (Random Forest)";
+        renderMiniStats([
+          { label: "Test R²", val: rf.r2.toFixed(4), color: "#047857" },
+          { label: "Test MAE", val: fmt(Math.round(rf.mae)) + " €", color: "#4361EE" },
+          { label: "Test MAPE", val: rf.mape.toFixed(2) + "%", color: "#0D9488" }
+        ]);
+        const top6 = ml.top10_importance.slice(0, 6);
+        Plotly.newPlot('areaChart', [{
+          type: 'bar', orientation: 'h',
+          y: top6.map(x => x.feature).reverse(),
+          x: top6.map(x => x.pct).reverse(),
+          marker: { color: ['#A7F3D0', '#6EE7B7', '#34D399', '#10B981', '#059669', '#047857'] },
+          text: top6.map(x => '\u00A0' + x.pct.toFixed(1) + '%').reverse(),
+          textposition: 'outside', cliponaxis: false,
+          textfont: { size: 11.5, color: '#0F172A', weight: 'bold' }
+        }], {
+          margin: { l: 145, r: 44, t: 6, b: 18 },
+          paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+          xaxis: { range: [0, 60], showgrid: false, zeroline: false, showticklabels: false },
+          yaxis: { tickfont: { size: 11 } }
+        }, { displayModeBar: false, responsive: true });
+
+        document.getElementById('tableTitle').textContent = "Đối Chiếu 5 Chỉ Tiêu Cốt Lõi (Trước vs Sau Làm Sạch)";
+        document.getElementById('tableTag').textContent = "Nghiệm thu 100% thực nghiệm";
+        renderTable(
+          ["Chỉ Tiêu Đánh Giá", "Dữ Liệu Thô", "Dữ Liệu Sạch", "Trạng Thái"],
+          [
+            ["<b>Tổng Ô Dữ Liệu Khuyết</b>", `${fmt(raw.na_total)} ô`, "<b>0 ô khuyết</b>", `<span class="kpi-badge-green">↓ -100% Sạch</span>`],
+            ["<b>Xung Đột Open=0 &amp; Sales&gt;0</b>", `${fmt(raw.open0_sales_gt0)} dòng`, "<b>0 dòng xung đột</b>", `<span class="kpi-badge-green">↓ -100% Chuẩn</span>`],
+            ["<b>Tương Quan Sales – Customers</b>", "r = -0.0021 (nhiễu)", `<b>r = ${clean.corr_sales_customers.toFixed(4)}</b>`, `<span class="kpi-badge-green">Khôi phục thật</span>`],
+            ["<b>Bộ Nhớ RAM Bảng Ghép</b>", `${clean.ram_before_mb} MB`, `<b>${clean.ram_after_mb} MB</b> (Đĩa: ${clean.bin_size_mb} MB)`, `<span class="kpi-badge-blue">↓ -85.87% RAM</span>`],
+            ["<b>Hiệu Năng Random Forest (Test)</b>", "OLS Baseline: R² = 0.6258", `<b>R² = ${rf.r2.toFixed(4)} | MAE = ${rf.mae.toFixed(2)} € | MAPE = ${rf.mape}%</b>`, `<span class="kpi-badge-green">🏆 Quán quân</span>`]
+          ]
+        );
+
+        document.getElementById('feedTitle').textContent = "Tổng Kết Nghiệm Thu Kiểm Toán";
+        renderFeed([
+          { icon: "🏆", bg: "#DCFCE7", title: "Random Forest Dẫn Đầu Tuyệt Đối", badge: "R² = 0.8881", badgeCls: "kpi-badge-green", desc: "Giảm 38.0% MAE và 45.3% RMSE so với Linear Regression OLS." },
+          { icon: "🔒", bg: "#EEF2FF", title: "Chống Data Leakage Tuyệt Đối", badge: "80/20 Time", badgeCls: "kpi-badge-blue", desc: "Loại Customers; Train 2013-01–2015-01, Test độc lập 6 tháng cuối." },
+          { icon: "⚡", bg: "#DCFCE7", title: "Tối Ưu Hóa Tài Nguyên Xuất Sắc", badge: "-85.9% RAM", badgeCls: "kpi-badge-green", desc: "Hạ cấp int8/int16/float32/category và nén tệp nhị phân còn 3.61 MB." },
+          { icon: "✅", bg: "#DCFCE7", title: "Đồng Bộ 100% Báo Cáo & Mã Nguồn", badge: "Verified", badgeCls: "kpi-badge-green", desc: "Khớp từng số liệu với run_pipeline.py và Tiểu luận PDF." }
+        ]);
+
+        // Single-Hue Emerald / Green Gradient HBar
+        document.getElementById('hbarTitle').textContent = "Mức Độ Cải Thiện Sau Chuẩn Hóa & Mô Hình (%)";
+        renderHBar(
+          ["Khử ô khuyết NaN", "Nén tệp đĩa", "Random Forest R²", "Tiết kiệm RAM", "Giảm MAE vs OLS"],
+          [100.0, 94.9, +(rf.r2*100).toFixed(1), clean.ram_saved_pct, 38.0],
+          ["100%", "94.9%", (rf.r2*100).toFixed(1) + "%", clean.ram_saved_pct.toFixed(1) + "%", "38.0%"],
+          ["#047857", "#059669", "#10B981", "#34D399", "#6EE7B7"],
+          122
+        );
+      }
+    }
+
+    renderAll();
+    window.addEventListener('resize', () => {
+      ['barChart', 'areaChart', 'hbarChart'].forEach(id => Plotly.Plots.resize(id));
+    });
+  </script>
+</body>
+</html>
